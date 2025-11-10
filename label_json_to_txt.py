@@ -12,8 +12,8 @@ INPUT_PATH  = r"C:\Users\user\dacon_ws\Sample\02.라벨링데이터\segmentation
 OUTPUT_DIR  = r"C:\Users\user\dacon_ws\sesac_dacon\train_label"
 
 # 이미지 크기
-IMG_W = 4056
-IMG_H = 3040
+IMGW = 4056
+IMGH = 3040
 
 
 import json
