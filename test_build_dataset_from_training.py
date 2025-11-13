@@ -10,8 +10,8 @@ import shutil, random
 from test_convert_json_to_yoloseg import convert_json_to_txt, IMGW, IMGH
 
 # ===== 사용자 설정 =====
-TRAINING_ROOT = Path(r"D:\자율주행_팀플\실내_주차장_데이터_unzip\181.실내_자율주차용_데이터\01-1.정식개방데이터\Validation")
-OUT_ROOT      = Path(r"D:\자율주행_팀플\data")
+TRAINING_ROOT = Path("/home/elicer/sesac_dacon/_unzip/181.실내_자율주차용_데이터/01-1.정식개방데이터/Validation/")
+OUT_ROOT      = Path("/home/elicer/sesac_dacon/data")
 
 TRAIN_RATIO = 0.7
 VALID_RATIO = 0.2

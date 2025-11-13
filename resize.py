@@ -11,7 +11,7 @@ import sys
 ORIGINAL_SIZE = (4056, 3040) 
 
 # 2. 목표 세로 크기 (Height)
-TARGET_HEIGHT = 640
+TARGET_HEIGHT = 760
 
 # 3. 새 이미지 크기 자동 계산 (비율 유지)
 # 원본 비율 = 너비 / 높이
@@ -26,7 +26,7 @@ NEW_SIZE = (new_width, TARGET_HEIGHT)
 BASE_PATH = './data'
 
 # 5. 리사이즈된 이미지를 저장할 새 폴더 경로
-OUTPUT_PATH = './data_resized'
+OUTPUT_PATH = f'./data_resized_{new_width}*{TARGET_HEIGHT}'
 
 # 6. 처리할 하위 폴더 목록
 PARTITIONS = ['train', 'valid', 'test']
@@ -46,8 +46,8 @@ def resize_images():
 
     try:
         for part in PARTITIONS:
-            image_dir = os.path.join(BASE_PATH, part, 'image')
-            output_dir = os.path.join(OUTPUT_PATH, part, 'image')
+            image_dir = os.path.join(BASE_PATH, part, 'images')
+            output_dir = os.path.join(OUTPUT_PATH, part, 'images')
             os.makedirs(output_dir, exist_ok=True)
             
             print(f"--- [{part}] 폴더 처리 중 ---")

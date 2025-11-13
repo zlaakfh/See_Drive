@@ -1,10 +1,10 @@
 import subprocess
 import os
 
-api_key = ""
+api_key = "90F77A71-3D89-4C36-BE36-849A2400616A"
 
-aihubshell_path = "/app"
-download_path = "/app/new_test_flod"
+aihubshell_path = "./"
+download_path = "./"
 dataset_key = "71576"
 
 total_gb = 0
@@ -17,8 +17,8 @@ print(aihubshell_exe)
 result = subprocess.run([aihubshell_exe, "-mode", "l", "-datasetkey", dataset_key],
                         capture_output=True, text=True)
 
-# print("stdout:", result.stdout)
-# print("stderr:", result.stderr)
+print("stdout:", result.stdout)
+print("stderr:", result.stderr)
 
 
 download_list = result.stdout.split("\n")
@@ -26,7 +26,7 @@ download_list = result.stdout.split("\n")
 
 
 for line in download_list:
-    if "camera.zip" in line:
+    if "camera.zip" in line and "객체인식" in line:
         camera_numbers.append(line.split("|")[-1].strip())
 
         data_size = line.split("|")[-2].split(" ")
@@ -59,7 +59,7 @@ if not os.path.isdir(download_path):
     os.makedirs(download_path, exist_ok=True)
 
 
-for i, filekey in enumerate(seg_numbers):
+for i, filekey in enumerate(seg_numbers[:59]):
     cmd = [aihubshell_exe, "-mode", "d", "-datasetkey", dataset_key, "-filekey", filekey, "-aihubapikey", api_key]
     result = subprocess.run(cmd,
                             capture_output=True, 
@@ -72,7 +72,7 @@ for i, filekey in enumerate(seg_numbers):
 
 
 
-for i, filekey in enumerate(camera_numbers):
+for i, filekey in enumerate(camera_numbers[:59]):
     cmd = [aihubshell_exe, "-mode", "d", "-datasetkey", dataset_key, "-filekey", filekey, "-aihubapikey", api_key]
     result = subprocess.run(cmd,
                             capture_output=True, 

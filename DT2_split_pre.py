@@ -1,7 +1,7 @@
 # 1.데이터 spilt 코드
 import os
 import json
-import cv2
+# import cv2
 import numpy as np
 import shutil
 from sklearn.model_selection import train_test_split

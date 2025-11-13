@@ -7,7 +7,7 @@ import json
 
 # ===== 사용자 설정: 필요 시 바꾸세요 =====
 
-INPUT = r"D:\자율주행_팀플\실내_주차장_데이터_unzip\181.실내_자율주차용_데이터\01-1.정식개방데이터\Validation\02.라벨링데이터"
+INPUT = "/home/elicer/sesac_dacon/_unzip/181.실내_자율주차용_데이터/01-1.정식개방데이터/Validation/02.라벨링데이터"
 OUTPUT = r"D:\자율주행_팀플\data"
 
 IMGW = 4056  # 이미지 원본 너비

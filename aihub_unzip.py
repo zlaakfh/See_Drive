@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 
 
-zip_path = ""
+zip_path = "./181.실내_자율주차용_데이터"
 zip_dir = Path(zip_path)  # 최상위 폴더 경로
 
 unzip_path = zip_path + "_unzip"

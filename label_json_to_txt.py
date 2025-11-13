@@ -6,10 +6,10 @@
 # =========================
 
 # 단일 .json 파일 or .json들이 있는 폴더
-INPUT_PATH  = r"C:\Users\user\dacon_ws\Sample\02.라벨링데이터\segmentation"
+INPUT_PATH  = "/home/elicer/sesac_dacon/_unzip/181.실내_자율주차용_데이터/01-1.정식개방데이터/Validation/02.라벨링데이터/VL_객체인식(2Hz)_기타(기타)_20220908_10-14_01.segmentation"
 
 # 결과 .txt 저장 폴더
-OUTPUT_DIR  = r"C:\Users\user\dacon_ws\sesac_dacon\train_label"
+OUTPUT_DIR  = "/home/elicer/sesac_dacon/sample/"
 
 # 이미지 크기
 IMGW = 4056
