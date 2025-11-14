@@ -38,13 +38,13 @@ def rename_and_copy_images(src_dir, dst_dir, target='.png', rm_name=''):
 
 
     # 이미지 파일 이름 수정 - src_dir 하위 이미지 파일들 이름 수정 후 dst_dir에 저장
-src_dir= './181.실내 자율주차용 데이터/01-1.정식개방데이터/Validation/01.원천데이터'
+src_dir= './_unzip/181.실내_자율주차용_데이터/01-1.정식개방데이터/Validation/01.원천데이터'
 dst_dir = './dataset/images'
 
 rename_and_copy_images(src_dir, dst_dir, '.png', '') # 필요 없는 부분 이름 넣고 삭제
 
     # 라벨 파일 이름 수정 - src_dir 하위 라벨 파일들 이름 수정 후 dst_dir에 저장
-src_dir= './181.실내 자율주차용 데이터/01-1.정식개방데이터/Validation/02.라벨링데이터'
+src_dir= './_unzip/181.실내_자율주차용_데이터/01-1.정식개방데이터/Validation/02.라벨링데이터'
 dst_dir = './dataset/labels'
 
 rename_and_copy_images(src_dir, dst_dir, '.json', '')

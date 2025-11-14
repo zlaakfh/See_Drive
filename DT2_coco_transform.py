@@ -46,7 +46,7 @@ def extract_polygon_dicts(seg):
 # 3) COCO 변환 메인 함수 (기존 구조 유지, segmentation 부분만 수정됨)
 ###############################################
 def convert_to_coco(input_dir, output_file, directory):
-    IMG_W = 4056
+    IMG_W = 4032
     IMG_H = 3040
     
     coco = {
