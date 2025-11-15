@@ -1,5 +1,6 @@
 import subprocess
 import os
+import glob
 
 api_key = "90F77A71-3D89-4C36-BE36-849A2400616A"
 
@@ -111,4 +112,11 @@ for key, value in par_download_list.items():
         
         print("stdout:", result.stdout)
         print("stderr:", result.stderr)
+    # check pair download
+    # 다운 오류로 파일이 하나만 있으면 삭제
+    download_file = glob.glob(f"**/*{key}*", recursive=True)
+    if len(download_file) != 2:
+        print("not pair, delete file : ",download_file)
+        os.remove(download_file[0])
+
     i+=1
