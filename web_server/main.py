@@ -1,14 +1,29 @@
 from fastapi import FastAPI, File, UploadFile, Form, status, HTTPException, Request
 from fastapi.templating import Jinja2Templates
-from typing import List # 여러 파일을 받을 경우
+from typing import List, Dict, Union, Any 
 import shutil
 import json
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
+import datetime
+from ultralytics import YOLO
+from PIL import Image
+import numpy as np
+import io
+
+FACE_DET_MODEL_PATH = "./model/yolov11n-face.pt"
+
+# init_model
+face_model = YOLO(FACE_DET_MODEL_PATH);
+
+
+def _detect_boxes(model: YOLO, frame_bgr: np.ndarray, conf: float, iou: float, imgsz: int) -> np.ndarray:
+    r = model.predict(frame_bgr, conf=conf, iou=iou, imgsz=imgsz, verbose=False)[0]
+    return r.boxes.xyxy.detach().cpu().numpy() if r and r.boxes is not None and len(r.boxes) > 0 else np.empty((0,4), float)
 
 app = FastAPI()
 
-# 템플릿 파일들이 위치한 디렉터리 지정
+
 templates = Jinja2Templates(directory="templates")
 
 
@@ -50,18 +65,33 @@ async def create_upload_file(file: UploadFile = File(...)):
 
 #     return {"info": f"file saved at {file_location}"}
 
-class Acceleration(BaseModel):
-    x: int
-    y: int
-    z: int
+class AccelData(BaseModel):
+    x: str
+    y: str
+    z: str
+    magnitude: str
+
+class GyroData(BaseModel):
+    x: str
+    y: str
+    z: str
+
+class GpsData(BaseModel):
+    latitude: str
+    longitude: str
+    accuracy: str
+
 
 class Metadata(BaseModel):
-    accident_num: int
-    acceleration: Acceleration
+    """전체 센서 및 GPS 메타데이터 모델"""
+    timestamp: str = Field(..., description="임계값 초과 감지 시점의 ISO 8601 시간")
+    accel: AccelData
+    gyro: GyroData
+    # GPS 데이터가 없거나 (status: 'Location unavailable') 있을 경우를 처리
+    gps: Dict[str, Any] # GpsData 또는 {'status': ...}를 유연하게 받기 위해 Dict[str, Any] 사용
+    threshold_passed: bool
 
-@app.post("/uploadfile/save")
-# 'file'은 UploadFile로 받습니다.
-# 'metadata'는 Form으로 JSON 문자열을 받습니다.
+@app.post("/report")
 async def create_upload_file(
     file: UploadFile = File(...), 
     metadata: str = Form(...) 
@@ -69,7 +99,9 @@ async def create_upload_file(
     """
     단일 이미지 파일과 JSON 메타데이터를 받아 처리하는 엔드포인트
     """
-    file_location = f"files/{file.filename}"
+    now = datetime.datetime.now()
+    formatted_time = now.strftime("%Y%m%d_%H%M%S")
+    file_location = f"files/{formatted_time}_{file.filename}"
     # 1. 파일 처리 및 저장
     try:
         # 파일을 동기적으로 디스크에 저장
@@ -97,6 +129,7 @@ async def create_upload_file(
         # Pydantic 유효성 검사 실패 등 기타 에러
         raise HTTPException(status_code=400, detail=f"메타데이터 유효성 검사 실패: {e}")
 
+    print(json_data)
 
     # 3. 최종 응답
     return {

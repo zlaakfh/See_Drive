@@ -6,7 +6,7 @@
 <body>
 
     <h2>단일 이미지 업로드 save</h2>
-    <form action="/uploadfile/save" method="post" enctype="multipart/form-data">
+    <form action="/report" method="post" enctype="multipart/form-data">
         <label for="file">업로드할 이미지 선택:</label><br>
         <input type="file" id="file" name="file" accept="image/*" required><br><br>
 
@@ -14,12 +14,24 @@
         <!-- <input type="textarea" id="description" name="description" value="{acc : {x: 1, y: 10, z:49}, acc_num: 2}"><br><br> -->
         <textarea id="metadata_field" name="metadata" rows="8" cols="40">
 {
-    "accident_num": 2,
-    "acceleration" : {
-        "x": 1, 
-        "y": 10, 
-        "z":49
-    }
+  "timestamp": "2025-11-20T11:00:00.123Z",
+  "accel": {
+    "y": "8.500",
+    "x": "10.250",
+    "z": "-5.500",
+    "magnitude": "14.500"
+  },
+  "gyro": {
+    "x": "0.150",
+    "y": "-1.200",
+    "z": "0.500"
+  },
+  "gps": {
+    "latitude": "37.566535",
+    "longitude": "126.977969",
+    "accuracy": "5.50"
+  },
+  "threshold_passed": true
 }
         </textarea>
 
