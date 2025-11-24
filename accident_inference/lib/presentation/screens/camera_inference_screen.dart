@@ -20,6 +20,14 @@ import '../../services/imu_manager.dart';
 import '../../services/log_writer.dart'; 
 import '../../widgets/center_toast.dart';
 
+import '../../models/accidents/accident_decision.dart';
+import '../../models/accidents/accident_rule.dart';
+import '../../models/accidents/accident_level.dart';
+import '../../models/accidents/accident_type.dart';
+import '../../models/hazard/hazard_class.dart';
+import '../../models/hazard/hazard_detection.dart';
+import '../../models/hazard/hazard_mapper.dart';
+
 /// Shim for ImageGallerySaver API bridged to native MethodChannel.
 class ImageGallerySaver {
   static const MethodChannel _channel = MethodChannel('app.gallery_saver');
@@ -29,7 +37,7 @@ class ImageGallerySaver {
     int quality = 100, // kept for compatibility
     String? name,
   }) async {
-    // Write bytes to a temp file, then hand off to native for gallery insert
+    // Write bytes to a temp file, then hand off to native for gallery iㅋㅋnsert
     final dir = await getTemporaryDirectory();
     final base = (name ?? 'capture_${DateTime.now().millisecondsSinceEpoch}')
         .replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '_');
@@ -86,6 +94,9 @@ class _CameraInferenceScreenState extends State<CameraInferenceScreen> with Sing
   double _uiFps = 0.0;
   double _engineFps = 0.0;
   int _lastDetLogUs = 0; // 마지막 onResult 로그 시각
+  int _lastLogUs = 0;           // 로그 주기용
+  int _lastAccidentEvalUs = 0;  // 사고 판단 주기 제어용
+
 
   // ===== Wear (마모도) 임계값 / 설정 =====
   double _wearThreshold = 0.60; // 0~1 사이 점수, 이 이상이면 '마모 심함'으로 간주
@@ -140,11 +151,11 @@ class _CameraInferenceScreenState extends State<CameraInferenceScreen> with Sing
   static const Duration _minUiSetStateInterval = Duration(milliseconds: 250);
   
   // Trigger Logic
-  DateTime? _lastDetectionTime;
-  static const Duration _detectionValidityDuration = Duration(seconds: 10);
+  // DateTime? _lastDetectionTime;
+  // static const Duration _detectionValidityDuration = Duration(seconds: 3);
 
   // === Wear score helpers ===
-  // 다각선 길이 (정규화 좌표 기준)
+  // 다각선 길이 (정규화 좌표 기준)a
   double _polylineLength(List pts) {
     double len = 0.0;
     for (int i = 1; i < pts.length; i++) {
@@ -841,19 +852,120 @@ class _CameraInferenceScreenState extends State<CameraInferenceScreen> with Sing
     //   return;
     // }
 
+  final classNames = [
+      'Animals(Dolls)',                // 0
+      'Person',                        // 1
+      'Garbage bag & sacks',           // 2
+      'Construction signs/No-parking', // 3
+      'Box',                           // 4
+      'Stones on road',                // 5
+      'Pothhole on road',              // 6
+      'Car',                           // 7
+      'Truck',                         // 8
+      'Bus',                           // 9
+    ];
 
-    // 충격 감지 x^2 + y^2 + z^2 > magnitude
-    final double x = (_lastImu?["acc"]["x"] as num).toDouble();
-    final double y = (_lastImu?["acc"]["y"] as num).toDouble();
-    final double z = (_lastImu?["acc"]["z"] as num).toDouble();
-    final double magnitude = math.sqrt(x * x + y * y + z * z);
-    debugPrint("acccccc x: $x y: $y, z: $z magnitude: $magnitude");
-    if (magnitude < 15.0) {
-      debugPrint("⏩ Skip send: magnitude $magnitude < 15.0");
-      return; // 충격 제외
+    for (final r in _lastSegResults) {
+      int idx = 0;
+      try {
+        idx = (r as dynamic).classIndex as int? ?? idx;
+      } catch (_) {}
+      try {
+        idx = (r as dynamic).classId as int? ?? idx;
+      } catch (_) {}
+
+      if (idx >= 0 && idx < classNames.length) {
+        try {
+          (r as dynamic).className = classNames[idx];
+        } catch (_) {}
+      }
+    }    
+    
+    // =========================
+    // ✅ 사고 판단 파트 (정리본)
+    // =========================
+    final nowUs = DateTime.now().microsecondsSinceEpoch;
+
+    // 사고 판단 스로틀은 "로그 시간"이랑 분리해서 관리
+    if (nowUs - _lastAccidentEvalUs < 200000) { // 0.2초 = 5fps
+      return;
+    }
+    _lastAccidentEvalUs = nowUs;
+
+    // 1) YOLOResult -> HazardDetection
+    final hazards = HazardMapper.fromResults(
+      _lastSegResults,
+      tUs: nowUs,
+      minScore: 0.30,
+    );
+
+    final imuSnapRaw = _imu.latestSnapshot;
+    if (imuSnapRaw == null) {
+      debugPrint("❌ IMU snapshot == null -> 사고 판단 로직 스킵");
+      return;
+    }
+    debugPrint("✅ IMU snapshot OK: lax=${imuSnapRaw.lax}, lay=${imuSnapRaw.lay}, laz=${imuSnapRaw.laz}, "
+              "gx=${imuSnapRaw.gx}, gy=${imuSnapRaw.gy}, gz=${imuSnapRaw.gz}");
+
+
+    final imuSnap = ImuSnapshot(
+      tUs: imuSnapRaw.tUs,
+      ax: imuSnapRaw.ax,
+      ay: imuSnapRaw.ay,
+      az: imuSnapRaw.az,
+      gx: imuSnapRaw.gx,
+      gy: imuSnapRaw.gy,
+      gz: imuSnapRaw.gz,
+      lax: imuSnapRaw.lax,
+      lay: imuSnapRaw.lay,
+      laz: imuSnapRaw.laz,
+    );
+    debugPrint("✅ decide enter: results=${_lastSegResults.length} hazards=${hazards.length}");
+
+    debugPrint("✅ imuSnapRaw=${imuSnapRaw.tUs} linMag=${imuSnap.linAccMag.toStringAsFixed(2)} gyroMag=${imuSnap.gyroMag.toStringAsFixed(2)}");
+
+    // 3) 사고 판단
+    final decision = AccidentRuleEngine.decide(
+      hazards: hazards,
+      imu: imuSnap,
+    );
+
+    // 4) UI
+    if (decision != null) {
+      debugPrint("🚨 ACCIDENT: type=${decision.type.label}, level=${decision.level.label}");
+
+      if (decision.level == AccidentLevel.minor) {
+        CenterToast.show(context,
+          message: "⚠️ 경미한 충격 감지 (${decision.type.label})",
+          type: ToastType.info,
+        );
+      } else {
+        _onAccidentDetected(decision);
+      }
+    } else { 
+      return;
     }
 
-    // // 조건 추가: 최근 n초 이내에 YOLO 감지가 있었는지 확인
+    // // 충격 감지 x^2 + y^2 + z^2 > magnitude
+    // final double x = (_lastImu?["acc"]["x"] as num).toDouble();
+    // final double y = (_lastImu?["acc"]["y"] as num).toDouble();
+    // final double z = (_lastImu?["acc"]["z"] as num).toDouble();
+    // final double magnitude = math.sqrt(x * x + y * y + z * z);
+    // debugPrint("acccccc x: $x y: $y, z: $z magnitude: $magnitude");
+    
+    // if (magnitude < 15.0) {
+    //   debugPrint("⏩ Skip send: magnitude $magnitude < 15.0");
+    //   return; // 충격 제외
+    // }
+
+    //     // todo : move
+    // // 유효한 감지가 있으면 시각 기록
+    // debugPrint("yolo results time update $results.isNotEmpty ====================");
+    // if (results.isNotEmpty) {
+    //   _lastDetectionTime = DateTime.now();
+    // }
+
+    // 조건 추가: 최근 n초 이내에 YOLO 감지가 있었는지 확인
     // if (_lastDetectionTime == null) {
     //   debugPrint("⏩ Skip send: No recent YOLO detection");
     //   return;
@@ -1104,14 +1216,33 @@ class _CameraInferenceScreenState extends State<CameraInferenceScreen> with Sing
       };
     }
   }
+
+  void _onAccidentDetected(AccidentDecision d) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        title: const Text("🚨 사고 감지"),
+        content: Text(
+          "유형: ${d.type.label}\n"
+          "심각도: ${d.level.label}\n"
+          "원인: ${d.reason}\n"
+          "탐지 객체: ${d.hazards.map((e)=>e.hazard.label).join(', ')}",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("확인"),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _onDetectionResults(List<YOLOResult> results) {
     debugPrint("🔍 _onDetectionResults called with ${results.length} results");
     debugPrint("🔍 Results: $results");
 
-    // 유효한 감지가 있으면 시각 기록
-    if (results.isNotEmpty) {
-      _lastDetectionTime = DateTime.now();
-    }
 
     // --- 실시간 FPS 계산 ---
     final nowTs = DateTime.now();
@@ -1256,7 +1387,7 @@ class _CameraInferenceScreenState extends State<CameraInferenceScreen> with Sing
     if (mounted && nowSet.difference(_lastUiSetState) >= _minUiSetStateInterval) {
       _lastUiSetState = nowSet;
       setState(() {});
-    }
+    }    
   }
 
   @override
