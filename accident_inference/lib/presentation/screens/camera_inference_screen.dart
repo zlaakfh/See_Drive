@@ -63,6 +63,9 @@ class NativeCameraCapture {
   }
 }
 
+// (프로젝트에 이미 있다면 유지) 모델 타입 커스텀 enum을 쓰지 않고 detect 고정으로 갑니다.
+// import '../../models/model_type.dart';  // ❌ 불필요
+
 class CameraInferenceScreen extends StatefulWidget {
   const CameraInferenceScreen({super.key});
 
@@ -136,9 +139,9 @@ class _CameraInferenceScreenState extends State<CameraInferenceScreen> with Sing
   DateTime _lastUiSetState = DateTime.fromMillisecondsSinceEpoch(0);
   static const Duration _minUiSetStateInterval = Duration(milliseconds: 250);
   
-  // === New Trigger Logic ===
+  // Trigger Logic
   DateTime? _lastDetectionTime;
-  static const Duration _detectionValidityDuration = Duration(seconds: 3);
+  static const Duration _detectionValidityDuration = Duration(seconds: 10);
 
   // === Wear score helpers ===
   // 다각선 길이 (정규화 좌표 기준)
@@ -456,7 +459,9 @@ class _CameraInferenceScreenState extends State<CameraInferenceScreen> with Sing
 
   // 필요한 TFLite 파일명만 지정해서 사용하세요.
   // 예시: assets/models/base_model_float16.tflite
-  String get _modelFileName => 'yolo_detec_obstacle_e2_float16.tflite';  
+  String get _modelFileName => 'yolo_detec_obstacle_e2_float16.tflite';
+  // String get _modelFileName => 'best_float32.tflite';
+  
   
 
   // === Offline upload queue (file-based) ===
@@ -813,7 +818,7 @@ class _CameraInferenceScreenState extends State<CameraInferenceScreen> with Sing
 
   Future<void> _checkImuAndSend() async {
     if (_lastImu == null) return;
-
+    debugPrint("_checkImuAndSend in --------------------------");
     // 위치 권한이 여기서 팝업되지 않도록: 미승인 시 스킵
     final perm = await Geolocator.checkPermission();
     if (perm == LocationPermission.denied || perm == LocationPermission.deniedForever) {
@@ -829,27 +834,37 @@ class _CameraInferenceScreenState extends State<CameraInferenceScreen> with Sing
       return;
     }
 
+    // 속도 체크 (단위: m/s → km/h)
+    // double speedKmh = (pos.speed.isNaN || pos.speed.isInfinite) ? 0.0 : pos.speed * 3.6;
+    // if (speedKmh < 15.0 || speedKmh > 50.0) {
+    //   debugPrint("⏩ Skip send: speed $speedKmh km/h not in [15, 50]");
+    //   return;
+    // }
+
+
     // 충격 감지 x^2 + y^2 + z^2 > magnitude
     final double x = (_lastImu?["acc"]["x"] as num).toDouble();
     final double y = (_lastImu?["acc"]["y"] as num).toDouble();
     final double z = (_lastImu?["acc"]["z"] as num).toDouble();
     final double magnitude = math.sqrt(x * x + y * y + z * z);
-    if (magnitude < 20.0) {
-      debugPrint("⏩ Skip send: magnitude $magnitude < 20.0");
+    debugPrint("acccccc x: $x y: $y, z: $z magnitude: $magnitude");
+    if (magnitude < 15.0) {
+      debugPrint("⏩ Skip send: magnitude $magnitude < 15.0");
       return; // 충격 제외
     }
 
-    // 조건 추가: 최근 n초 이내에 YOLO 감지가 있었는지 확인
-    if (_lastDetectionTime == null) {
-      debugPrint("⏩ Skip send: No recent YOLO detection");
-      return;
-    }
-    final timeSinceDetection = DateTime.now().difference(_lastDetectionTime!);
-    if (timeSinceDetection > _detectionValidityDuration) {
-      debugPrint("⏩ Skip send: Last detection was ${timeSinceDetection.inSeconds}s ago (limit: ${_detectionValidityDuration.inSeconds}s)");
-      return;
-    }
-    debugPrint("✅ Impact detected ($magnitude) within ${timeSinceDetection.inMilliseconds}ms of YOLO detection!");
+    // // 조건 추가: 최근 n초 이내에 YOLO 감지가 있었는지 확인
+    // if (_lastDetectionTime == null) {
+    //   debugPrint("⏩ Skip send: No recent YOLO detection");
+    //   return;
+    // }
+    // final timeSinceDetection = DateTime.now().difference(_lastDetectionTime!);
+    // if (timeSinceDetection > _detectionValidityDuration) {
+    //   debugPrint("⏩ Skip send: Last detection was ${timeSinceDetection.inSeconds}s ago (limit: ${_detectionValidityDuration.inSeconds}s)");
+    //   return;
+    // }
+    // debugPrint("✅ Impact detected ($magnitude) within ${timeSinceDetection.inMilliseconds}ms of YOLO detection!");
+
 
     try {
       // 1. 카메라 캡쳐 (native 우선)
@@ -1089,11 +1104,10 @@ class _CameraInferenceScreenState extends State<CameraInferenceScreen> with Sing
       };
     }
   }
-
   void _onDetectionResults(List<YOLOResult> results) {
     debugPrint("🔍 _onDetectionResults called with ${results.length} results");
     debugPrint("🔍 Results: $results");
-    
+
     // 유효한 감지가 있으면 시각 기록
     if (results.isNotEmpty) {
       _lastDetectionTime = DateTime.now();

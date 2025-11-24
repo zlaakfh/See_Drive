@@ -104,6 +104,7 @@ flutter:
   
   assets:
     - assets/models/yolo_detec_obstacle_e2_float16.tflite
+    - assets/models/yolo11n-seg_float16.tflite
     - assets/logo.png
     - assets/applogo.png
     - assets/icon/MapPinRoad_maxfill_blue_1024.png
