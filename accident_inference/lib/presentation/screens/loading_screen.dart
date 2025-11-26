@@ -45,7 +45,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
       backgroundColor: Colors.white,
       body: Center(
         child: Image.asset(
-          'assets/icon/MapPinRoad_maxfill_blue_1024.png',
+          'assets/icon/SeeDrive.png',
           width: 150,
         ),
       ),

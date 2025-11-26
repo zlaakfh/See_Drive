@@ -550,7 +550,7 @@ class _UploadGalleryScreenState extends State<UploadGalleryScreen> {
                                 children: [
                                   TileLayer(
                                     urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                    userAgentPackageName: 'com.roadglass.app',
+                                    userAgentPackageName: 'com.SeeDrive.app',
                                   ),
                                   MarkerLayer(markers: [
                                     Marker(

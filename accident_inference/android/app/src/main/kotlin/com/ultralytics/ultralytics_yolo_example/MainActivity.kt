@@ -108,7 +108,7 @@ class MainActivity : FlutterActivity() {
             val values = ContentValues().apply {
                 put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
                 put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
-                put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/RoadGlass")
+                put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/SeeDrive")
                 put(MediaStore.MediaColumns.IS_PENDING, 1)
             }
             val resolver = applicationContext.contentResolver
@@ -122,9 +122,9 @@ class MainActivity : FlutterActivity() {
             resolver.update(itemUri, values, null, null)
             itemUri
         } else {
-            // Android 9 (Pie) 이하: 퍼블릭 Pictures/RoadGlass 경로에 복사 후 미디어 스캔
+
             val picturesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-            val targetDir = File(picturesDir, "RoadGlass")
+            val targetDir = File(picturesDir, "SeeDrive")
             if (!targetDir.exists()) targetDir.mkdirs()
             val targetFile = File(targetDir, fileName)
             FileInputStream(srcFile).use { input ->
