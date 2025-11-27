@@ -135,164 +135,192 @@ class _GuideScreenState extends State<GuideScreen> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
-    // NOTE: 카메라 권한은 가이드 화면에서 시작 버튼을 통해 획득(카메라 화면 autoStart)
-    // 위치 권한은 앱 시작 시(스플래시/루트)에서만 요청
+    // 배경색: 메인 화면과 통일된 Dark Theme
     return Scaffold(
-      body: Stack(
-        children: [
-          // Full-bleed background gradient (covers entire device width)
-          Positioned.fill(
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFFEAF6FF), Color(0xFFB3E5FC)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+      backgroundColor: const Color(0xFF121212),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.close, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 10),
+                      // 1. Header Section
+                      const Text(
+                        '안전한 주행을 위한\n체크리스트',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          height: 1.3,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        '정확한 감지와 안전을 위해 아래 항목을 확인해주세요.',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.6),
+                          fontSize: 15,
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+
+                      // 2. Checklist Section (Cards)
+                      _ChecklistCard(
+                        icon: Icons.stay_current_landscape_rounded,
+                        title: '가로 거치 고정',
+                        subtitle: '스마트폰이 흔들리지 않도록\n차량 거치대에 단단히 고정하세요.',
+                        accentColor: const Color(0xFF60A5FA),
+                      ),
+                      const SizedBox(height: 16),
+                      _ChecklistCard(
+                        icon: Icons.cleaning_services_rounded,
+                        title: '렌즈 청결 확인',
+                        subtitle: '카메라 렌즈를 닦아 인식률을 높이세요.\n이물질은 오작동의 원인이 됩니다.',
+                        accentColor: const Color(0xFFF59E0B),
+                      ),
+                      const SizedBox(height: 16),
+                      _ChecklistCard(
+                        icon: Icons.visibility_rounded,
+                        title: '시야 확보',
+                        subtitle: '차선과 표지판이 잘 보이도록\n카메라 각도를 조절해주세요.',
+                        accentColor: const Color(0xFF34D399),
+                      ),
+                      const SizedBox(height: 16),
+                      _ChecklistCard(
+                        icon: Icons.do_not_touch_rounded,
+                        title: '조작 주의',
+                        subtitle: '운전 중 조작은 매우 위험합니다.\n반드시 정차 후 설정하세요.',
+                        accentColor: const Color(0xFFFB7185),
+                      ),
+                      const SizedBox(height: 32),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-
-          // Main content with horizontal padding (does NOT affect overlays)
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 36),
-              child: Stack(
-                children: [
-                  Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        const SizedBox(height: 40),
-                        FadeTransition(
-                          opacity: _iconAnimation,
-                          child: Hero(
-                            tag: 'app-logo',
-                            child: Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                gradient: LinearGradient(
-                                  colors: [_primary.withOpacity(0.85), const Color(0xFF64B5F6).withOpacity(0.65)],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: _primary.withOpacity(0.25),
-                                    blurRadius: 20,
-                                    offset: const Offset(0, 8),
-                                  ),
-                                ],
-                              ),
-                              padding: const EdgeInsets.all(28),
-                              child: Icon(
-                                Icons.photo_camera_rounded,
-                                size: 48,
-                                color: Colors.white.withOpacity(0.9),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        FadeTransition(
-                          opacity: _titleAnimation,
-                          child: Hero(
-                            tag: 'app-title',
-                            child: Text(
-                              'See:Drive',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 34,
-                                fontWeight: FontWeight.w900,
-                                color: _primary,
-                                letterSpacing: 1.5,
-                                shadows: [
-                                  Shadow(
-                                    color: _primary.withOpacity(0.18),
-                                    offset: const Offset(0, 3),
-                                    blurRadius: 6,
-                                  ),
-                                ],
-                                decoration: TextDecoration.none,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        FadeTransition(
-                          opacity: _subtitleAnimation,
-                          child: Text(
-                            '당신의 안전한 운전을 위한 가이드',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: _navy.withOpacity(0.85),
-                              letterSpacing: 0.8,
-                              height: 1.4,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              _buildGuideStep(Icons.stay_current_landscape, "스마트폰을 차량 거치대에\n단단히 고정하세요."),
-                              const SizedBox(height: 10),
-                              _buildGuideStep(Icons.cleaning_services, "렌즈를 깨끗하게 유지해\n인식률을 높이세요."),
-                              const SizedBox(height: 10),
-                              _buildGuideStep(Icons.traffic, "표지판, 차선 등 도로 요소가\n잘 보이게 촬영하세요."),
-                              const SizedBox(height: 10),
-                              _buildGuideStep(Icons.block, "운전 중에는 조작하지 말고,\n정차 후 이용하세요."),
-                              const SizedBox(height: 10),
-                              _buildGuideStep(Icons.lock, "촬영 데이터는\n안전하게 보호됩니다"),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _buildGlassmorphicButton(context),
-                        const SizedBox(height: 24),
-                      ],
+            
+            // 3. Bottom Action Button
+            Container(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+              decoration: BoxDecoration(
+                color: const Color(0xFF121212),
+                border: Border(top: BorderSide(color: Colors.white.withOpacity(0.1))),
+              ),
+              child: SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    // TODO: 카메라 권한 요청 및 네비게이션 로직
+                    // Navigator.pushReplacementNamed(context, '/camera');
+                    final ok = await _ensureCameraPermission();
+                    if (!ok) return;
+                    Navigator.pushNamed(
+                      context,
+                      '/camera',
+                      arguments: const {'autoStart': true},
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF60A5FA), // 메인 액센트 컬러
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                ],
+                  child: const Text(
+                    '확인 및 주행 시작',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
+}
 
-  Widget _buildGuideStep(IconData icon, String text) {
+// --- 하위 위젯 컴포넌트 ---
+
+class _ChecklistCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Color accentColor;
+
+  const _ChecklistCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.accentColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.blueGrey.withOpacity(0.1)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.blueGrey.withOpacity(0.15),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        color: const Color(0xFF1E1E1E), // 카드 배경색
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.05),
+          width: 1,
+        ),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: _primary, size: 24),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: accentColor.withOpacity(0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: accentColor, size: 24),
+          ),
           const SizedBox(width: 16),
           Expanded(
-            child: Text(
-              text,
-              style: TextStyle(
-                color: _navy,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.6),
+                    fontSize: 14,
+                    height: 1.5,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -300,6 +328,7 @@ class _GuideScreenState extends State<GuideScreen> with SingleTickerProviderStat
     );
   }
 }
+
 
 class _AnimatedScrollHintArrow extends StatefulWidget {
   @override
