@@ -7,11 +7,11 @@ import json
 
 # ===== 사용자 설정: 필요 시 바꾸세요 =====
 
-INPUT = "/home/elicer/sesac_dacon/_unzip/181.실내_자율주차용_데이터/01-1.정식개방데이터/Validation/02.라벨링데이터"
-OUTPUT = r"D:\자율주행_팀플\data"
+INPUT = "/home/elicer/Workspace/split_data/dataset_DT_cls4_1008x760"
+OUTPUT = "/home/elicer/song/data"
 
-IMGW = 4056  # 이미지 원본 너비
-IMGH = 3040  # 이미지 원본 높이
+IMGW = 1008  # 이미지 원본 너비
+IMGH = 760  # 이미지 원본 높이
 
 # class_name → class_id 맵핑
 ANNOTATION_LABEL = {

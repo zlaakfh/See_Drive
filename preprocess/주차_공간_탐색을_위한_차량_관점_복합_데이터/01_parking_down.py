@@ -19,7 +19,7 @@ from tqdm import tqdm
 resize_ratio = 4
 
 
-api_key = ""
+api_key = "B7CF0514-EF35-4305-9F12-E08B64778090"
 
 aihubshell_path = "/home/elicer/song/sesac_dacon/"
 download_path = "./aihub_data"

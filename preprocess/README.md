@@ -30,17 +30,20 @@ deactivate
 
 ## 실내 자율주차용 데이터 실행 순서
 ``` shell
-python aihub_down.py
-python DT2_split_pre.py
-python DT2_coco_transform.py
+python 실내_자율주차용_데이터/01_aihub_down.py
+python 실내_자율주차용_데이터/02_DT2_split_pre.py
+python 실내_자율주차용_데이터/03_DT2_coco_transform.py
+
+# yolo segmentation 변환
+python 실내_자율주차용_데이터/02_convert_json_to_yoloseg.py
 ```
 
 ## 주차 공간 탐색을 위한 차량 관점 복합 데이터
 ``` shell
-python parking/parking_down.py
-python parking/unzip.py
-python parking/preprocessing.py
-python parking/coco_transform.py
+python 주차_공간_탐색을_위한_차량_관점_복합_데이터/01_parking_down.py
+python 주차_공간_탐색을_위한_차량_관점_복합_데이터/02_unzip.py
+python 주차_공간_탐색을_위한_차량_관점_복합_데이터/03_preprocessing.py
+python 주차_공간_탐색을_위한_차량_관점_복합_데이터/04_coco_transform.py
 ```
 
 ## 결과물
