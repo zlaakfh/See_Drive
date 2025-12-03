@@ -1,0 +1,12 @@
+_BASE_: "../configs/Base-RCNN-FPN.yaml"
+MODEL:
+  WEIGHTS: "model_dev4_cls4_i10000.pth"
+  MASK_ON: True
+  ROI_HEADS:
+    NUM_CLASSES: 4
+    
+  RESNETS:
+    DEPTH: 50
+SOLVER:
+  STEPS: (210000, 250000)
+  MAX_ITER: 270000
