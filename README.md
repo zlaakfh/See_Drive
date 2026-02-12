@@ -140,7 +140,7 @@ if ΔAccel > T2 and 사용자_미응답:
     level = 2
 
 # Level 3
-if ΔAccel > T_high or 연기_탐지 or Z축기울기 > 80°:
+if ΔAccel > T_high or Z축기울기 > 80°:
     level = 3
 ```
 
@@ -154,7 +154,6 @@ if ΔAccel > T_high or 연기_탐지 or Z축기울기 > 80°:
 | ---------- | ---------- | --------------- | ----- |
 | 포트홀 충격     | 요철/파손 인식   | ΔAccel 증가       | 하부 충격 |
 | 전방 충돌      | 차량/벽 접근    | ΔAccel X, Z 급상승 | 추돌    |
-| 화재         | 연기/불꽃 Seg. | 변화 없음           | 화재 위험 |
 | 후진 주차 접촉사고 | 기둥/차량 근접   | ΔAccel 소폭 증가    | 저속 접촉 |
 
 ---
@@ -168,7 +167,7 @@ if ΔAccel > T_high or 연기_탐지 or Z축기울기 > 80°:
 | Level 0 | Vision 전조 감지              | 센서 분석 시작      |
 | Level 1 | ΔAccel > T1               | 사고 여부 확인 팝업   |
 | Level 2 | ΔAccel > T2 or ΔGyro > T3 | 자동 신고         |
-| Level 3 | 화재·전복 등                   | 즉시 신고 + 음성 안내 |
+| Level 3 | 전복 등                   | 즉시 신고 |
 
 ---
 
@@ -225,7 +224,6 @@ if offset < 최종임계값:
       ↓
 [Vision AI]
   - YOLO: 위험요소 실시간 탐지
-  - Detectron2: 연기·불꽃·주차구조물 분할
       ↓
 [센서 융합 사고 판단 알고리즘]
   - Accel/Gyro 변화량 계산
@@ -233,12 +231,11 @@ if offset < 최종임계값:
       ↓
 [사고 대응]
   - Level 1: 팝업
-  - Level 2: 자동 신고
-  - Level 3: 즉시 신고 + 음성 안내
+  - Level 2: 미응답 시 자동 신고
+  - Level 3: 즉시 신고 
       ↓
 [FastAPI 서버]
   - 사고 이미지·GPS·센서 로그 저장
-  - 카카오 알림 발송
       ↓
 [사용자 안내 화면]
 ```
