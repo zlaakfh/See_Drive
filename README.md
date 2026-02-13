@@ -166,7 +166,7 @@ if ΔAccel > T_high or Z축기울기 > 80°:
 | ------- | ------------------------- | ------------- |
 | Level 0 | Vision 전조 감지              | 센서 분석 시작      |
 | Level 1 | ΔAccel > T1               | 사고 여부 확인 팝업   |
-| Level 2 | ΔAccel > T2 or ΔGyro > T3 | 자동 신고         |
+| Level 2 | ΔAccel > T2 or ΔGyro > T3 | 미응답 시 자동 신고         |
 | Level 3 | 전복 등                   | 즉시 신고 |
 
 ---
