@@ -22,7 +22,6 @@ Vision AI와 차량 IMU 센서를 융합하여 **도로 사고를 자동으로 �
 
 ![Detection_parkingslot](./img/Detection.gif)
 ![Back_Parking](./img/Backparking.gif)
-![App](./img/collision.jpg)
   
 
 ---
